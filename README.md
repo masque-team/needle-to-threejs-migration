@@ -3,8 +3,20 @@
 คู่มือกลางสำหรับย้ายเกม Unity / Needle เป็นเว็บ Three.js โดยรักษากติกาและ asset เดิม
 เน้นแยก Logic, renderer และ UI ใช้ทรัพยากรร่วมกันอย่างถูกต้อง และเก็บเอฟเฟกต์เป็น Quarks JSON
 
-**รีโปนี้เป็นเอกสารกระบวนการ ไม่ใช่ template เกมหรือตัวแปลงอัตโนมัติ**
+**รีโปนี้มีคู่มือและ Agent Skills ไม่ใช่ template เกมหรือตัวแปลงอัตโนมัติ**
 ไม่มีโมเดล ภาพ เสียง โค้ดเฉพาะเกม หรือข้อมูลรับรองของโปรเจกต์ต้นทาง
+
+## Skills แยกตามงาน
+
+| Skill | ขอบเขต |
+| --- | --- |
+| [.github/skills/needle-migration/SKILL.md](.github/skills/needle-migration/SKILL.md) | สำรวจและย้ายเกมทั้งชุด เลือกอ่านเฉพาะ Skill ย่อยที่ต้องใช้ |
+| [.github/skills/threejs-assets/SKILL.md](.github/skills/threejs-assets/SKILL.md) | GLB, animation, decoder และแชร์ทรัพยากรภาพ |
+| [.github/skills/web-game-logic/SKILL.md](.github/skills/web-game-logic/SKILL.md) | เวลาเกม การชน การเกิดวัตถุ และ pooling |
+| [.github/skills/quarks-vfx/SKILL.md](.github/skills/quarks-vfx/SKILL.md) | ตกแต่งเอฟเฟกต์ด้วย JSON มาตรฐานของ Quarks |
+
+การใช้งานแบบ Skill ต้องติดตั้งในโปรเจกต์ปลายทางก่อน ไม่ใช่แนบลิงก์แล้วจะติดตั้งเอง
+ดู [INSTALL_SKILLS.md](INSTALL_SKILLS.md) สำหรับวิธีติดตั้งและตัวอย่างคำสั่ง
 
 ## เริ่มใช้งาน
 
