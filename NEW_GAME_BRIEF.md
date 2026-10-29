@@ -26,10 +26,21 @@
 
 ## Asset ที่ตรวจพบ
 
+ทำรายการเฉพาะ asset ที่จำเป็นใน scene/flow ที่ตกลง ไม่ใช้โฟลเดอร์ทั้งชุดแทนรายการ
+
+| Asset / source | ใช้ใน scene หรือ flow ใด | เหตุผลที่ต้องย้าย | Dependency | หลักฐานการใช้ / dynamic load |
+| --- | --- | --- | --- | --- |
+| กรอก | กรอก | กรอก | กรอก | กรอก |
+
+- Asset ที่ไม่ย้ายและเหตุผล:
+- ของที่ไม่ใช้แต่ยังฝังใน GLB และแผนแยก/ข้อจำกัด:
+
 - GLB/export เดิมและ extension ที่ใช้:
 - ตัวละคร skeleton/morph และ animation mapping:
 - ท่อนฉาก prefab, pivot และขนาดจริง:
 - วัสดุ/texture ที่คาดว่าแชร์กัน และหลักฐานที่ต้องตรวจ:
+- โมเดลซ้ำ จำนวนที่ใช้พร้อมกัน geometry ที่แชร์ได้ และกลุ่มที่เหมาะกับ InstancedMesh:
+- ข้อจำกัดของ instancing เช่น skeleton, transparency, material แยก หรือการชน/picking รายชิ้น:
 - ภาพ UI เสียง และเงื่อนไขสิทธิ์:
 - เอฟเฟกต์ที่ต้องย้ายเป็น Quarks JSON:
 - shader/lighting/physics/particle modules ที่อาจต้องทำทดแทน:

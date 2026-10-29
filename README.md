@@ -1,19 +1,31 @@
 # Needle to Three.js Migration
 
-คู่มือกลางสำหรับย้ายเกม Unity / Needle เป็นเว็บ Three.js โดยรักษากติกาและ asset เดิม
-เน้นแยก Logic, renderer และ UI ใช้ทรัพยากรร่วมกันอย่างถูกต้อง และเก็บเอฟเฟกต์เป็น Quarks JSON
+คู่มือและ Skills เฉพาะการย้ายเกมที่มีต้นทาง Needle เป็นเว็บ Three.js
+รักษากติกาเดิม ย้ายเฉพาะ asset ที่ต้องใช้จริง และเก็บเอฟเฟกต์เดิมที่จำเป็นเป็น Quarks JSON
 
 **รีโปนี้มีคู่มือและ Agent Skills ไม่ใช่ template เกมหรือตัวแปลงอัตโนมัติ**
 ไม่มีโมเดล ภาพ เสียง โค้ดเฉพาะเกม หรือข้อมูลรับรองของโปรเจกต์ต้นทาง
+
+## ขอบเขตที่ตั้งใจให้ใช้
+
+- ใช้เฉพาะช่วงแปลงเกมจาก Needle ไม่ใช่ Skill สร้างเกมใหม่ แก้เว็บทั่วไป หรือเพิ่มฟีเจอร์หลังย้ายเสร็จ
+- เริ่มจาก scene/flow ที่ตกลง แล้วทำ asset allowlist พร้อมเหตุผลและ dependency ของแต่ละรายการ
+- ย้ายเฉพาะโมเดล animation, UI, เสียง ฟอนต์ และเอฟเฟกต์ที่ถูกใช้จริง รวม dependency ที่จำเป็น
+- ไม่คัดลอกทั้ง Assets/export/public, demo, cache, ไฟล์เริ่มต้น framework หรือ runtime Needle เก่า
+- ตรวจการเรียกไฟล์แบบ dynamic ก่อนตัดออก; ถ้า GLB ฝังของที่ไม่ใช้ ให้แยกอย่างปลอดภัยหรือรายงานข้อจำกัด ไม่อ้างว่าทั้งไฟล์จำเป็น
+- ไม่เพิ่มภาพหรือเอฟเฟกต์ตกแต่งใหม่โดยไม่ได้ตกลง
+- ระหว่าง import ให้รวม image/texture/material/geometry ซ้ำที่เข้ากันได้เลย ไม่ต้องรอสั่งแยก แต่ต้องไม่เปลี่ยนภาพหรือพฤติกรรม
+- โมเดลนิ่งแบบเดียวกันหลายชิ้นให้ใช้ InstancedMesh เมื่อรองรับ เช่น ต้นไม้เดียวกัน 100 ต้น ใช้ geometry/material ชุดเดียวและ 100 transforms
+- การแชร์ทรัพยากร pooling และ instancing เป็นคนละเรื่อง ต้องตรวจ draw calls จริง; ไม่ทำ atlas ใหม่หรือเปลี่ยน UV เอง
 
 ## Skills แยกตามงาน
 
 | Skill | ขอบเขต |
 | --- | --- |
 | [.github/skills/needle-migration/SKILL.md](.github/skills/needle-migration/SKILL.md) | สำรวจและย้ายเกมทั้งชุด เลือกอ่านเฉพาะ Skill ย่อยที่ต้องใช้ |
-| [.github/skills/threejs-assets/SKILL.md](.github/skills/threejs-assets/SKILL.md) | GLB, animation, decoder และแชร์ทรัพยากรภาพ |
-| [.github/skills/web-game-logic/SKILL.md](.github/skills/web-game-logic/SKILL.md) | เวลาเกม การชน การเกิดวัตถุ และ pooling |
-| [.github/skills/quarks-vfx/SKILL.md](.github/skills/quarks-vfx/SKILL.md) | ตกแต่งเอฟเฟกต์ด้วย JSON มาตรฐานของ Quarks |
+| [.github/skills/threejs-assets/SKILL.md](.github/skills/threejs-assets/SKILL.md) | ย้ายเฉพาะ asset และ dependency ที่จำเป็นจากเกม Needle |
+| [.github/skills/web-game-logic/SKILL.md](.github/skills/web-game-logic/SKILL.md) | ย้าย Logic เดิมของเกม Needle ไม่เพิ่มกติกาหรือฟีเจอร์ใหม่ |
+| [.github/skills/quarks-vfx/SKILL.md](.github/skills/quarks-vfx/SKILL.md) | ย้ายเฉพาะเอฟเฟกต์เดิมที่ใช้จริงเป็น Quarks JSON; ข้ามเมื่อไม่มี |
 
 การใช้งานแบบ Skill ต้องติดตั้งในโปรเจกต์ปลายทางก่อน ไม่ใช่แนบลิงก์แล้วจะติดตั้งเอง
 ดู [INSTALL_SKILLS.md](INSTALL_SKILLS.md) สำหรับวิธีติดตั้งและตัวอย่างคำสั่ง
@@ -36,7 +48,11 @@
 
 ตรวจเกมต้นฉบับและค่าจริงใน scene/prefab ก่อน สรุปสิ่งที่จะย้ายกับข้อแตกต่างที่พบ
 อย่าแก้ต้นฉบับ อย่านำค่าหรือ asset ของเกมตัวอย่างมาใช้โดยไม่ตรวจ
-ทำทีละส่วนและทดสอบทันที ใช้เอฟเฟกต์เป็น JSON มาตรฐานของ three.quarks
+ทำทีละส่วนและทดสอบทันที ย้ายเฉพาะเอฟเฟกต์เดิมที่จำเป็นเป็น JSON มาตรฐานของ three.quarks
+ทำ asset allowlist พร้อมเหตุผลก่อน import ย้ายเฉพาะรายการที่ใช้จริงและ dependency
+รวม texture/material/geometry ที่ใช้ร่วมกันได้เลย และทำ instancing ให้โมเดลซ้ำที่เหมาะสม
+รักษาตำแหน่ง จุดชน และ identity ของแต่ละชิ้น รายงานจำนวนทรัพยากรกับ draw calls ก่อน–หลัง และเหตุผลของกลุ่มที่รวมไม่ได้
+ไม่คัดลอกทั้งโฟลเดอร์ ไม่เพิ่มฟีเจอร์หรือของตกแต่งใหม่
 รักษาการแชร์ material/texture ที่เข้ากันได้ และตรวจ reference ตอนรันจริง
 แจ้งข้อจำกัดที่ยังไม่พิสูจน์ เช่น physics, แสง และประสิทธิภาพบนมือถือ
 ห้ามเผยแพร่ asset หรือข้อมูลเฉพาะเกมขึ้น public โดยไม่ได้รับอนุญาต
@@ -47,7 +63,8 @@
 
 ## หลักที่ใช้ร่วมกัน
 
-- เริ่มจากเกมเดิมที่เล่นได้และค่าจริง ไม่เดาจากภาพหรือชื่อสคริปต์
+- เริ่มจากเกม Needle เดิมที่เล่นได้และค่าจริง ไม่เดาจากภาพหรือชื่อสคริปต์
+- ตรวจ allowlist ของ asset และ dependency ไม่ย้ายของที่ไม่เกี่ยวกับ scene/flow ปลายทาง
 - ทดสอบ GLB ที่ export อยู่แล้วก่อนแปลงใหม่
 - ตรวจ animation tracks และการขยับจริง ไม่ดูเพียงจำนวน clips
 - แชร์ material/texture หลังตรวจความเข้ากันได้ ไม่รวมจากชื่ออย่างเดียว

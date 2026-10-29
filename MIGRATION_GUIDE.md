@@ -1,7 +1,8 @@
-# กระบวนการย้าย Unity / Needle เป็นเว็บ Three.js
+# กระบวนการย้ายจาก Needle เป็นเว็บ Three.js
 
 ใช้คู่มือนี้ร่วมกับ [NEW_GAME_BRIEF.md](NEW_GAME_BRIEF.md) และ [CHECKLIST.md](CHECKLIST.md)
 ทุกค่า ชื่อไฟล์ จำนวน prefab และกติกาต้องมาจากเกมที่กำลังย้าย ไม่ใช่ค่าเริ่มต้นตายตัวของคู่มือ
+ขอบเขตคือโปรเจกต์ Unity ที่มี Needle source/export อยู่แล้ว ไม่ใช่การสร้างเกมใหม่หรือเพิ่มงานทั่วไปหลัง port เสร็จ
 
 ## 1. สำรวจต้นฉบับก่อนลงมือ
 
@@ -56,6 +57,14 @@ public/assets/
 ```
 
 ทำ importer ที่อ่านต้นฉบับแล้วคัดลอกออกมา ไม่เขียนย้อนกลับ
+ก่อนคัดลอก ให้ทำ allowlist จาก entry scene, screen flow และ reference ที่เกมใช้จริง
+แต่ละรายการต้องมี source, เหตุผล, runtime owner และ dependency เช่น skeleton, clip, texture และเสียงที่เรียกใช้
+ไล่ dependencies รวมการสุ่ม prefab และการโหลดด้วยชื่อ/string ในสคริปต์ ไม่ตัดของที่ยังพิสูจน์ว่าไม่ใช้ไม่ได้
+import เฉพาะ allowlist กับ dependency ไม่ mirror ทั้ง Assets/export/public หรือแพ็กเกจ
+ตัด scene/ตัวละครที่ไม่ใช้ demo, cache, editor-only content, starter art และ runtime Needle เก่าออก
+decoder และไฟล์ license ที่จำเป็นต้องคงไว้ แต่ไม่คัดลอก node_modules ทั้งชุด
+ถ้า GLB ที่ต้องใช้มีของไม่จำเป็นฝังอยู่ ให้ export/extract เฉพาะส่วนอย่างปลอดภัยแล้วตรวจ references/animation ใหม่
+หากยังแยกอย่างปลอดภัยไม่ได้ ให้รายงานของที่ติดอยู่และข้อจำกัดก่อน ไม่เรียกการคัดลอกทั้ง GLB ว่าเลือก asset สะอาดแล้ว
 แยกไฟล์ import ออกจากงานที่ปรับเอง เช่น reimport รูปควันได้ แต่ไม่เขียนทับ JSON particle ที่ตกแต่งแล้ว
 manifest ควรเก็บ reference และค่าฉากที่จำเป็น ไม่คัดลอกข้อมูลลับหรือข้อมูลส่วนบุคคลมาด้วย
 บันทึกที่มาและเงื่อนไขสิทธิ์ของ asset และให้ build รันได้โดยไม่ต้องมี Unity หรือต้นฉบับติดตั้งอยู่
@@ -102,6 +111,9 @@ node index อาจเปลี่ยนหลัง export ใหม่ ต้
 
 ## 7. รักษาการแชร์ material และ texture
 
+การรวมทรัพยากรซ้ำที่พิสูจน์ว่าเข้ากันได้เป็นส่วนหนึ่งของ import ให้ทำได้เลยก่อนสร้าง pool ไม่ต้องรอสั่ง optimization แยก
+ทำเฉพาะ asset ใน allowlist ไม่ย้ายทั้งคลังมาเพื่อรวมของที่ไม่ได้ใช้
+
 material เดียวใน Unity ไม่ได้รับประกันว่าจะเป็น object เดียวเมื่อโหลด GLB แยกหลายไฟล์
 สำเนาจาก prefab เดียวกันอาจแชร์ทรัพยากรอยู่แล้ว แต่ต้องตรวจข้าม GLB ด้วย
 
@@ -114,9 +126,28 @@ material เดียวใน Unity ไม่ได้รับประกั�
 7. นับ object identity ตอนรันจริง รวมสำเนาใน pool และทดสอบว่าภาพไม่เปลี่ยน
 
 อย่าบังคับแชร์ lightmap หรือวัสดุที่ต้องเปลี่ยนสถานะแยกชิ้น
+แยกการรวม image file, texture object และ material ให้ถูกระดับ: รูปเหมือนกันแต่ sampler/color space/UV ต่างกันยังอาจต้องใช้ texture object แยก
+material คนละตัวก็ยังใช้ texture ที่เข้ากันได้ร่วมกันได้ ไม่ต้องบังคับรวม material
+อย่าทำ atlas ใหม่ เปลี่ยน UV หรือลดความละเอียด/recompress โดยถือว่าเป็นการแชร์ texture ธรรมดา
 ตัวช่วยที่เขียนสำหรับชื่อไฟล์หรือโมเดลแบบใดแบบหนึ่ง ต้องปรับ eligibility สำหรับเกมใหม่
 การแชร์ไม่ลด draw calls โดยอัตโนมัติ และไม่ลดข้อมูลซ้ำในไฟล์ GLB บนดิสก์
 การลด draw calls ต้องพิจารณารวม mesh/instancing ส่วนการลดดาวน์โหลดต้องจัดแพ็ก asset เพิ่ม
+
+### โมเดลซ้ำให้ใช้ geometry ร่วมและ instancing เมื่อทำได้
+
+ตัวอย่างต้นไม้แบบเดียวกัน 100 ต้น: ใช้ geometry/material ชุดเดียวและ InstancedMesh ที่มี 100 transforms แทน Mesh แยก 100 ตัว เมื่อไม่มีข้อจำกัดที่ทำให้ใช้ร่วมกันไม่ได้
+ตรวจ geometry จาก attributes, indices, normals/tangents, UV, groups และ deformation state ไม่ดูชื่อ mesh อย่างเดียว
+ถ้า prefab มีหลายส่วน ให้แยกกลุ่ม instance ตาม geometry/material ที่เข้ากันได้ ไม่สมมติว่าทั้ง prefab เป็น mesh เดียว
+
+รักษา instanceId → logical object/collider mapping และ world transform ของแต่ละชิ้น
+ตอนเกิด เก็บคืน pool หรือ restart ต้องอัปเดต slot/matrix/count/bounds ให้ตรงกัน
+แบ่งกลุ่มตามพื้นที่หรือท่อนฉากเพื่อไม่ให้ culling กลายเป็นกลุ่มใหญ่เกินจำเป็น
+ไม่บังคับใช้ InstancedMesh ปกติกับ skeleton ที่ animate แยก, morph/transform ที่ไม่รองรับ, transparency sorting หรือวัสดุที่เปลี่ยนแยกชิ้น
+ถ้าใช้ไม่ได้ ให้แชร์ทรัพยากรที่ปลอดภัย เก็บ object แยก และรายงานเหตุผล
+
+pooling ไม่เท่ากับ instancing: อย่างแรกลดการสร้าง/ทำลาย อย่างหลังลดการสั่งวาดสำหรับกลุ่มที่รองรับ
+รายงาน geometry/material/texture counts, image files และ draw calls แยกกัน พร้อมทดสอบภาพ ตำแหน่ง การชน picking และ culling
+อย่ารับประกันว่าเหลือหนึ่ง draw call เสมอ เพราะหลาย material/ส่วนของ mesh และ shadow/render passes อาจยังต้องวาดหลายครั้ง
 
 ## 8. รักษาจังหวะเล่นและเวลาเกม
 
@@ -155,6 +186,10 @@ itemWorldZ = itemLocalZ + groupZ
 อย่า reset ID แต่ปล่อย map ของโมเดลเก่าค้าง และประเมินการ rebase พิกัดถ้าเกมเล่นได้นานมาก
 
 ## 10. เอฟเฟกต์เป็น Quarks JSON ก้อนเดียว
+
+ทำขั้นนี้เฉพาะเมื่อเกมต้นทางมีเอฟเฟกต์ที่ใช้จริงใน flow ที่ตกลง ไม่เพิ่ม particle ให้เกมที่ไม่มี
+เลือก emitter จาก reference ของ controller และรวมเฉพาะ texture/material/child emitter ที่จำเป็น
+ไม่คัดลอกทั้ง VFX pack และไม่แต่งควัน/แสงใหม่หรือสร้างภาพทดแทนโดยไม่ได้รับอนุญาต
 
 Needle ใช้ three.quarks ภายใน แต่ `NEEDLE_components` ไม่ใช่ standalone Quarks prefab JSON
 ใช้ข้อมูลเดิมเป็น reference แล้วจัดหรือ export เป็น JSON มาตรฐานด้วยเครื่องมือรุ่นที่เข้ากันได้

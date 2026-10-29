@@ -3,15 +3,17 @@
 ชุดนี้มี 4 Skills แบบ project-level สำหรับเครื่องมือที่รองรับ Agent Skills
 เอกสารหลักแต่ละตัวอยู่ใน `.github/skills/<name>/SKILL.md`
 ไม่จำเป็นต้องติดตั้ง template เกม และไม่มี asset เกมติดมาด้วย
+ทั้ง 4 ตัวใช้เฉพาะการย้ายจาก Needle ชื่อบางตัวเป็นชื่อทั่วไปแต่ไม่ได้ใช้สร้าง/แก้เกมทั่วไป
+ไม่ต้องเรียกทุก Skill: ถ้าเกมไม่มี particle ให้ข้าม `quarks-vfx` และย้ายเฉพาะ asset ที่อยู่ใน allowlist
 
 ## เลือก Skill ให้ตรงงาน
 
 | Skill | ใช้เมื่อ |
 | --- | --- |
 | `needle-migration` | สำรวจและย้ายเกมทั้งชุด เลือกอ่าน Skill ย่อยตามงาน |
-| `threejs-assets` | GLB, decoder, animation, prefab และแชร์ material/texture |
-| `web-game-logic` | State, input, เวลาเกม, collision, spawn และ pooling |
-| `quarks-vfx` | ควัน แสง ประกาย และเอฟเฟกต์ JSON ของ three.quarks |
+| `threejs-assets` | ย้าย asset ที่ต้องใช้จริงจาก Needle พร้อม dependency และการแชร์ทรัพยากร |
+| `web-game-logic` | แปลงพฤติกรรมเดิมของเกม Needle ให้ทำงานบนเว็บ |
+| `quarks-vfx` | แปลงเฉพาะเอฟเฟกต์เดิมที่จำเป็นจาก Needle เป็น Quarks JSON |
 
 คำสั่งหลักแต่ละตัวใช้งานได้เอง ไม่อ้างไฟล์คู่มือภายนอกเป็น dependency บังคับ
 รีโปกลางยังมีคู่มือยาวให้เปิดเพิ่มเมื่อจำเป็น ไม่ต้องอ่านทั้งหมดทุกครั้งที่ปรับเอฟเฟกต์เล็กน้อย
@@ -59,16 +61,19 @@ https://github.com/masque-team/needle-to-threejs-migration
 ```
 
 ```text
-ใช้ threejs-assets ตรวจว่า GLB เหล่านี้แชร์ material/texture ร่วมกันได้ไหม
+ใช้ threejs-assets สำรวจ scene Needle ที่กำลังย้าย
+ทำ allowlist และย้ายเฉพาะ GLB/UI/เสียงที่ใช้จริงพร้อม dependency
+ตรวจการแชร์ material/texture โดยไม่รวมจากชื่ออย่างเดียว
 ```
 
 ```text
-ใช้ web-game-logic แก้รอยต่อฉาก โดยรักษาความเร็วและตำแหน่งเดิม
+ใช้ web-game-logic ย้าย Logic เดิมจาก Needle โดยรักษากติกา input และจังหวะเวลา
+ตรวจรอยต่อฉากเฉพาะเมื่อเกมต้นฉบับมีฉากเป็นท่อน
 ```
 
 ```text
-ใช้ quarks-vfx ปรับควันตอนวิ่งให้ชัดขึ้น แก้ใน JSON เป็นหลัก
-อย่าเปลี่ยน Logic เกม และใช้การตรวจเฉพาะเอฟเฟกต์ก่อน
+ใช้ quarks-vfx ย้ายเฉพาะ emitter และ texture ของเอฟเฟกต์เดิมที่ถูกเรียกจริงใน Needle
+จัดเป็น Quarks JSON ไม่เพิ่มของตกแต่งใหม่ และอย่าเปลี่ยน Logic เกม
 ```
 
 เมื่ออัปเดตชุด Skill ให้บันทึกรุ่นที่ติดตั้งไว้ในโปรเจกต์เกม

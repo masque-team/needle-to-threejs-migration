@@ -1,14 +1,15 @@
 ---
 name: web-game-logic
-description: "Port or fix web-game behavior while preserving the original rules. Use for state machines, input timing, delta time, collisions, scoring, spawn patterns, parent movement, pooling, restart, เกมกระตุก, จุดชน, เจนไอเทม และขยับฉาก. Not for GLB shader/material import or visual particle tuning."
+description: "Port existing Needle game behavior into its agreed standalone web migration. Use for translating source Needle state, input, time, collisions, scoring, spawn and reuse semantics without adding new gameplay. ใช้ตอนย้าย Logic จาก Needle เท่านั้น ไม่ใช้สร้างเกมใหม่ แก้เกมเว็บทั่วไป หรือเพิ่มฟีเจอร์หลังย้ายเสร็จ."
 ---
 
 # Web Game Logic
 
 ## Scope
 
-Preserve the original rules and timing through a renderer-independent simulation.
+Preserve the source Needle rules and timing through a renderer-independent simulation during the port.
 Start at the function that controls the requested behavior, not only UI forwarding code.
+Implement only behavior that exists in the source and is in scope. This is not a general game-development or optimization skill.
 
 ## Audit Before Porting
 
@@ -27,6 +28,9 @@ Start at the function that controls the requested behavior, not only UI forwardi
 
 ## Moving Objects And Pooling
 
+Apply the following only where the source game actually has moving worlds, spawning or object reuse.
+Do not introduce a runner architecture, parent scrolling or a new pooling system into unrelated game types by default.
+
 1. Preload required assets and prepare reusable instances to match maximum simultaneous usage, including repeated random selections of one variant.
 2. For segmented worlds, move every active segment first. Recycle afterward and calculate tail placement from positions at the same simulation time.
 3. Verify segment length and connector/pivot positions; do not overlap models merely to hide a position error.
@@ -40,6 +44,7 @@ worldPosition = localPosition + groupOffset
 5. Return collected/offscreen objects to pools; do not destroy and recreate them every cycle.
 6. Keep logical identity, model maps and ownership consistent across restart. Do not reset IDs while retaining a conflicting renderer map.
 7. Bound look-ahead generation and pool growth. Consider coordinate rebasing for very long runs.
+8. If rendering uses InstancedMesh, preserve per-instance identity and world transforms for collision/picking. Pool reuse must update slot mappings, matrices, count and bounds; do not make rules depend on one Mesh object per logical item.
 
 ## Lifecycle
 
@@ -54,7 +59,7 @@ An end-game burst may keep rendering after simulation stops; continuous running 
 - Ordinary/special scoring and exact difficulty thresholds.
 - Slow/invalid frame deltas, pause/resume and high-speed collision.
 - Spawn spacing/patterns, world/local coordinate agreement and cleanup cutoffs.
-- Thousands of world-recycle steps, every segment pair, repeated variants and bounded object counts.
+- Where relevant: repeated world-recycle steps, segment pairs, repeated variants and bounded object counts.
 
 Report which behavior was preserved, which changed intentionally, and which original behavior cannot yet be verified.
 Use `quarks-vfx` to change the visual response to events; do not add particle construction to simulation code.
