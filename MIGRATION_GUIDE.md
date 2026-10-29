@@ -4,6 +4,52 @@
 ทุกค่า ชื่อไฟล์ จำนวน prefab และกติกาต้องมาจากเกมที่กำลังย้าย ไม่ใช่ค่าเริ่มต้นตายตัวของคู่มือ
 ขอบเขตคือโปรเจกต์ Unity ที่มี Needle source/export อยู่แล้ว ไม่ใช่การสร้างเกมใหม่หรือเพิ่มงานทั่วไปหลัง port เสร็จ
 
+## Stack ปลายทางและการแบ่งไฟล์
+
+baseline ของโปรเจกต์ที่ย้ายคือ **Node.js 22.12+ + Svelte 5 + TypeScript + Three.js + Tailwind CSS 4 + Vite 8** ตามรูปแบบเว็บเกมของทีม
+Vite config ใช้ Svelte plugin และ `@tailwindcss/vite`; CSS entry โหลด Tailwind 4 ด้วย `@import 'tailwindcss'`
+ใช้ version range ที่เข้ากันและ lockfile ของโปรเจกต์นั้น อย่าคัดลอก lockfile หรือเวอร์ชัน dependency จากเกมตัวอย่างโดยไม่ตรวจ Node/runtime compatibility
+
+โครงสร้างแนะนำ:
+
+```text
+src/
+  App.svelte              ประกอบหน้าจอและเชื่อม UI กับ session
+  app.css                 Tailwind entry, theme tokens และ base styles
+  components/             menu, HUD, pause/end และ UI ที่แบ่งตามหน้าที่
+  lib/game/               state, rules, input, session และ logic tests
+  lib/three/              scene, camera, asset loading, animation และ renderer
+  lib/assets.ts           URL/schema/loading boundary ของ asset
+public/
+  assets/models/          GLB ที่เลือกและ dependency ที่จำเป็น
+  assets/ui/              ภาพ UI ที่เลือก
+  assets/audio/           เสียงที่ถูกเรียกใช้จริง
+  assets/vfx/             Quarks JSON และภาพที่ระบบใช้
+  config/                 JSON ปรับค่าได้ ตรวจด้วย Zod ก่อนใช้งาน
+scripts/                  audit/import/sync/generate แบบอ่าน source และเขียนเฉพาะ target
+package.json              dependencies และ scripts ของเกมนี้
+package-lock.json         dependency graph ที่ reproducible ของเกมนี้
+vite.config.ts            Svelte/Tailwind plugins, deploy base และ dev-only sync hooks
+```
+
+`App.svelte` ทำหน้าที่ประกอบ UI ไม่ใส่ game rules, GLB conversion หรือ renderer lifecycle ทั้งหมดไว้ใน component เดียว
+เก็บ logic เกมที่ทดสอบได้โดยไม่สร้าง renderer ใน `src/lib/game`; ให้ `src/lib/three` รับผิดชอบ scene/camera/mixer/Quarks และคืน listener/GPU resources ตอน dispose
+ใช้ Tailwind สำหรับ layout/utility และ theme tokens; component CSS ใช้เฉพาะกรณีที่ทำให้ animation, pseudo-element หรือ layout ซับซ้อนอ่านชัดขึ้น
+
+รูปแบบจัดไฟล์สำหรับเว็บเกมมีสองชนิดและไม่ควรปะปนกัน:
+
+| ชนิด | การจัดการ |
+| --- | --- |
+| ไฟล์ต้นฉบับที่เปลี่ยนตามรายการ เช่น card PNG | วางใน directory ที่กำหนดอย่างชัดเจน, สแกนชื่อ/metadata ด้วย script, สร้าง manifest ใหม่ และ watch add/change/unlink ใน dev เมื่อจำเป็น |
+| asset คงที่จาก Needle เช่น GLB, UI, audio, VFX | เลือกผ่าน allowlist, import เฉพาะ dependency, คัดลอกเข้าปลายทาง และบันทึก source/owner; ห้าม scan ทั้งต้นฉบับหรือ mirror directory |
+| config ที่ทีมตั้งใจแก้ | เก็บ JSON แยกใน `public/config`, ตรวจด้วย Zod/schema ก่อนใช้ และไม่ปนกับ generated manifest |
+
+ตัวอย่าง dynamic catalog สร้างรายการจากชื่อ PNG และเขียน `manifest.json` ผ่าน sync script; ผู้ดูแลเพิ่ม/ลบ PNG ใน input directory และไม่แก้ manifest เอง
+สำหรับเกม Needle ให้ใช้วิธีนี้เฉพาะ dynamic asset set ที่ source flow ต้องรองรับจริง ไม่สร้างระบบ catalog หรือ file watcher ให้เกมที่ไม่มีความต้องการนั้น
+
+ถ้าต้นฉบับของเกมที่กำลังย้ายมี framework/runtime constraint ที่ใช้ baseline นี้ไม่ได้ ให้กรอกข้อยกเว้นใน NEW_GAME_BRIEF ก่อนเริ่ม พร้อมเหตุผล, ผลกระทบต่อ file layout และผู้อนุมัติ ห้ามเปลี่ยนเป็น vanilla DOM/CSS หรือเลือก Vite รุ่นเก่าโดยไม่บันทึก
+`package.json` เป็นที่แก้ scripts และ dependency; regenerate/commit lockfile จากโปรเจกต์นั้นเองทุกครั้ง ส่วน `vite.config.ts` เก็บ plugin และ `base` path ที่ต้องตรงกับปลายทาง deploy; dev watcher เป็น optional และต้องไม่ติด production โดยไม่ตั้งใจ
+
 ## 1. สำรวจต้นฉบับก่อนลงมือ
 
 1. เปิดเกมเดิม เล่นให้ครบหน้าแรก กติกา เล่น จบ และเริ่มใหม่
@@ -42,7 +88,7 @@ GLB ย้ายข้อมูลภาพได้ แต่ไม่ได้
 
 ## 3. จัด asset และสคริปต์นำเข้า
 
-ตัวอย่างโครงสร้างปลายทาง ไม่ใช่ไฟล์ที่รีโปเอกสารนี้จัดมาให้:
+ตัวอย่างตำแหน่ง asset ในโครงสร้าง Svelte/Vite ปลายทาง ไม่ใช่ไฟล์ที่รีโปเอกสารนี้จัดมาให้:
 
 ```text
 public/assets/
@@ -61,11 +107,16 @@ public/assets/
 แต่ละรายการต้องมี source, เหตุผล, runtime owner และ dependency เช่น skeleton, clip, texture และเสียงที่เรียกใช้
 ไล่ dependencies รวมการสุ่ม prefab และการโหลดด้วยชื่อ/string ในสคริปต์ ไม่ตัดของที่ยังพิสูจน์ว่าไม่ใช้ไม่ได้
 import เฉพาะ allowlist กับ dependency ไม่ mirror ทั้ง Assets/export/public หรือแพ็กเกจ
-ตัด scene/ตัวละครที่ไม่ใช้ demo, cache, editor-only content, starter art และ runtime Needle เก่าออก
+ตัด scene/ตัวละครที่ไม่ใช้ demo, cache, editor-only content, framework starter art และ runtime Needle เก่าออก
+สร้าง target scaffolding ของ Svelte/Vite/Tailwind ตามโครงสร้างด้านบนได้ แต่ไม่คัดลอก starter application หรือภาพตัวอย่างจากเกมอื่นมาเป็น content ของเกมที่ย้าย
 decoder และไฟล์ license ที่จำเป็นต้องคงไว้ แต่ไม่คัดลอก node_modules ทั้งชุด
 ถ้า GLB ที่ต้องใช้มีของไม่จำเป็นฝังอยู่ ให้ export/extract เฉพาะส่วนอย่างปลอดภัยแล้วตรวจ references/animation ใหม่
 หากยังแยกอย่างปลอดภัยไม่ได้ ให้รายงานของที่ติดอยู่และข้อจำกัดก่อน ไม่เรียกการคัดลอกทั้ง GLB ว่าเลือก asset สะอาดแล้ว
 แยกไฟล์ import ออกจากงานที่ปรับเอง เช่น reimport รูปควันได้ แต่ไม่เขียนทับ JSON particle ที่ตกแต่งแล้ว
+กำหนด owner ให้แต่ละไฟล์: `public/assets` เป็น output ของ allowlist/import, `public/config` เป็นข้อมูลที่ทีมแก้และมี schema validation, manifest ที่ script สแกนสร้างเป็น generated output และ `src/` เป็น implementation ที่ทีมดูแล
+ถ้าต้อง sync ไฟล์แบบ dynamic ให้ทำ script idempotent และตรวจเฉพาะ directory ที่ระบุ; watch add/change/unlink ระหว่าง dev ได้เมื่อ flow ต้องการ พร้อม cleanup watcher/timer ตอน server ปิด
+ห้ามแก้ manifest ที่สร้างจาก script ด้วยมือ เพราะรอบ sync/build จะเขียนทับ ให้แก้ input/config ต้นทางแล้ว generate ใหม่
+ให้ script sync เปรียบเทียบเนื้อหาก่อนเขียน, เขียนไฟล์ชั่วคราวแล้ว rename เมื่อทำได้, จำกัด output ให้อยู่ใน target directory และรายงานไฟล์ชื่อผิดที่ถูกข้าม
 manifest ควรเก็บ reference และค่าฉากที่จำเป็น ไม่คัดลอกข้อมูลลับหรือข้อมูลส่วนบุคคลมาด้วย
 บันทึกที่มาและเงื่อนไขสิทธิ์ของ asset และให้ build รันได้โดยไม่ต้องมี Unity หรือต้นฉบับติดตั้งอยู่
 
@@ -233,7 +284,8 @@ prefab ควรมี metadata, geometry, material, texture/image references �
 
 ใช้ [CHECKLIST.md](CHECKLIST.md) พร้อมแนบหลักฐานจากเกมที่ย้าย
 คำสั่งตรวจขึ้นกับโปรเจกต์ปลายทาง ไม่ใช่คำสั่งที่มีอยู่ในรีโปเอกสารนี้
-โดยทั่วไปควรมี typecheck, unit/regression tests, production build และ dependency audit
+สำหรับ baseline Svelte/Vite ให้มี `svelte-check` + TypeScript check, Vitest/unit regression tests, Vite production build และ dependency audit
+แยก test ของ rules/session/file naming ออกจาก browser/render tests; ระบุว่าการเช็กใดใช้ source assets หรือ WebGL จริง
 
 วัดเปิด–ปิดเอฟเฟกต์ด้วยฉาก/ความเร็ว/ความละเอียดเดียวกัน หลัง warmup หลายรอบ
 เก็บ frame time, p95, draw calls, particle count และจำนวน texture/geometry

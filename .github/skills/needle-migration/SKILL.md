@@ -12,6 +12,13 @@ Read repository instructions first. Treat the original project as read-only unle
 This is not a new-game template, a general Three.js development skill or a post-migration enhancement workflow.
 Stop using this skill when the agreed port is verified; do not add redesign, new effects, features or generic optimization work.
 
+## Target Stack And File Ownership
+
+Use the team's current web-game baseline for a new port: **Node.js 22.12+, Svelte 5, TypeScript, Three.js, Tailwind CSS 4 and Vite 8**. Wire Svelte and Tailwind through `@sveltejs/vite-plugin-svelte` and `@tailwindcss/vite`.
+Keep UI composition in `src/App.svelte` and `src/components/`, renderer-independent rules/session in `src/lib/game/`, Three.js scene/rendering in `src/lib/three/`, and Tailwind entry/theme in `src/app.css`.
+Treat the original source as read-only. Import only allowlisted dependencies into `public/assets/`; keep editable, schema-validated settings in `public/config/`; keep importer/sync scripts in `scripts/` and generated manifests out of manual editing.
+This stack is a target-project requirement, not a game template. If a verified source-host, browser or deployment constraint prevents it, record the exception and approval in the brief before implementation. Do not silently substitute vanilla DOM/CSS or an older Vite line.
+
 ## Start With Evidence
 
 1. Establish source project/scene, target directory, target devices and allowed changes.
@@ -45,7 +52,7 @@ These are skill names, not separate agents; do not spawn agents unless separatel
 3. Separate simulation, rendering/prefabs and UI. Preserve original values unless a change is agreed.
 4. Deduplicate compatible required images/textures/materials/geometry during import without waiting for a separate request. Prefer instanced rendering for compatible repeated static models, preserve incompatible cases with reasons, and keep copied assets separate from authored JSON/config.
 5. Port gameplay in small testable steps; validate immediately after a substantive edit.
-6. Reuse only required original UI/audio and reproduce existing transitions on the agreed target screens.
+6. Reuse only required original UI/audio and reproduce existing transitions in Svelte components on the agreed target screens.
 7. If original effects are in scope, port them through standard Quarks JSON. Do not add decorative effects or create procedural emitter frameworks.
 8. Run project-specific typecheck/tests/build/audit and exercise the real production build.
 

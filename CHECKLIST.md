@@ -6,6 +6,8 @@
 ## ก่อนเริ่ม
 
 - [ ] กรอก [NEW_GAME_BRIEF.md](NEW_GAME_BRIEF.md) และตกลงขอบเขตแล้ว
+- [ ] ยืนยัน target stack Node.js 22.12+ + Svelte 5 + TypeScript + Three.js + Tailwind CSS 4 + Vite 8 หรือบันทึกข้อยกเว้นพร้อมเหตุผลก่อนเริ่ม
+- [ ] กำหนดหน้าที่ `src/components`, `src/lib/game`, `src/lib/three`, `src/app.css`, `public/` และ `scripts/` ให้ชัด
 - [ ] เปิดเล่นต้นฉบับครบ flow หรือระบุชัดว่าส่วนใดเปิดไม่ได้
 - [ ] ตรวจ implementation จริงและค่าที่ Inspector ทับไว้
 - [ ] ตรวจสิทธิ์ asset และแยก source/target โดยไม่แก้ต้นฉบับ
@@ -15,6 +17,9 @@
 ## Asset และภาพ
 
 - [ ] มี allowlist ระบุ source เหตุผล runtime owner และ dependency ของทุก asset ที่จะย้าย
+- [ ] source assets เป็น read-only; script import เขียนเฉพาะ target และคัดลอกเฉพาะ allowlist/dependency
+- [ ] แยก imported assets, editable config, implementation และ generated manifests; ไม่มีการแก้ generated output ด้วยมือ
+- [ ] config/manifest ที่รับข้อมูลภายนอกตรวจ schema ก่อนใช้งาน; script sync ทำซ้ำได้และจำกัด path ที่จัดการ
 - [ ] ตรวจ dynamic/string-based loads และ prefab variants ไม่ตัดไฟล์จากการเดา
 - [ ] ไม่มีการคัดลอกทั้ง Assets/export/public, demo, cache, editor-only หรือ framework starter art
 - [ ] GLB ที่มีของไม่ใช้ฝังอยู่ได้รับการแยกและทดสอบ หรือมีรายงานสิ่งที่ยังติดอยู่ชัดเจน
@@ -48,12 +53,13 @@
 - [ ] เอฟเฟกต์ต่อเนื่องหยุดเมื่อแพ้ และ burst จบเองได้
 - [ ] restart clears effects และออกเกมคืน listener/resources ครบ
 - [ ] โลโก้ รูป UI เสียง และข้อความยาวครบตามขอบเขต
+- [ ] UI ประกอบด้วย Svelte components; CSS entry ใช้ Tailwind CSS 4 ผ่าน `@tailwindcss/vite` ตาม baseline หรือมีข้อยกเว้นที่อนุมัติ
 - [ ] ตรวจมือถือ เดสก์ท็อป แนวนอน จอเตี้ย safe area และ reduced motion
 - [ ] host message ตรวจ origin/source และ API ที่ป้องกันตรวจสิทธิ์ฝั่ง server
 
 ## ก่อนส่งงาน
 
-- [ ] typecheck, tests, production build และ dependency audit ผ่านหรือมีข้อยกเว้นระบุชัด
+- [ ] Svelte/TypeScript check, unit/regression tests, production build และ dependency audit ผ่านหรือมีข้อยกเว้นระบุชัด
 - [ ] ไม่มี console/network/WebGL error ที่เกี่ยวกับงาน
 - [ ] วัด frame time/p95 และ resource counts หลัง warmup พร้อมระบุอุปกรณ์
 - [ ] ทดสอบ restart หลายรอบและการเล่นยาว ไม่ใช้ช่วงสั้นพิสูจน์ว่าไม่มี memory leak

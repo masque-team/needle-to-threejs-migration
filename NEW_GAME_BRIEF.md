@@ -13,7 +13,10 @@
 | ปลายทางและ repo ที่ได้รับอนุญาต | แนบในบริบทของงาน |
 | ต้นฉบับเปิดเล่นได้หรือไม่ | กรอกข้อจำกัด |
 | อุปกรณ์และเบราว์เซอร์เป้าหมาย | กรอก |
-| framework/ข้อจำกัดปลายทาง | กรอก |
+| stack ปลายทาง | baseline: Node.js 22.12+ + Svelte 5 + TypeScript + Three.js + Tailwind CSS 4 + Vite 8; ระบุข้อยกเว้นและเหตุผล |
+| ข้อจำกัด framework/runtime | Node/browser/deploy path/host integration หรือข้อกำหนดที่ขัดกับ baseline |
+| file ownership/import policy | public assets, editable config, generated manifest และ source ที่แก้ได้ |
+| dynamic asset directories | directory ที่ผู้ใช้เพิ่ม/ลบไฟล์ได้, naming/schema, manifest owner หรือ “ไม่มี” |
 | ผู้ยืนยันสิทธิ์ asset และการเผยแพร่ | กรอกบทบาทหรือช่องทาง ไม่ใส่ข้อมูลส่วนบุคคล |
 
 ## กติกาและ flow
@@ -52,6 +55,7 @@
 - ห้ามเปลี่ยนหรือห้ามเผยแพร่:
 - เกณฑ์ทดสอบก่อนส่งงาน:
 - อุปกรณ์จริงที่เข้าถึงได้ / ที่ยังทดสอบไม่ได้:
+- หากยกเว้น Node 22.12+/Svelte 5/Tailwind 4/Vite 8: เหตุผล ผลกระทบต่อโครงสร้างไฟล์ และผู้อนุมัติ:
 
 ## รายงานเมื่อจบงาน
 
