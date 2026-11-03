@@ -1,5 +1,12 @@
 # Needle to Three.js Migration
 
+รีโปนี้มี **สองงานแยกกัน**:
+
+- **[MiniGame Development Standard V1](MINIGAME_STANDARD.md):** กติกากลางสำหรับเว็บเกมที่สร้างใหม่และเกมที่ย้ายเสร็จแล้ว ครอบคลุม Svelte/TS/Tailwind/Three.js, CSS/FX, Screen Flow, Folder, editable Game Config, Testing และ Mobile Web; ใช้ [minigame-standard Skill](.github/skills/minigame-standard/SKILL.md)
+- **Needle Migration Guides & Skills:** ใช้เฉพาะย้าย Unity/Needle โดยรักษาต้นฉบับ; ผลลัพธ์สุดท้ายต้องตรวจตาม MiniGame Standard
+
+**V1 ยังไม่กำหนด GLB/Prefab Format หรือสร้าง Character/Obstacle SDK กลาง** เพื่อไม่ให้ชนงานระบบโมเดลที่กำลังทำอยู่ แค่จัด Asset และโค้ดไว้ในโฟลเดอร์ให้ถูกต้อง
+
 คู่มือและ Skills เฉพาะการย้ายเกมที่มีต้นทาง Needle เป็นเว็บ Three.js
 รักษากติกาเดิม ย้ายเฉพาะ asset ที่ต้องใช้จริง และเก็บเอฟเฟกต์เดิมที่จำเป็นเป็น Quarks JSON
 

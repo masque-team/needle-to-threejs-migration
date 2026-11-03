@@ -1,15 +1,16 @@
 # ติดตั้ง Skills ในโปรเจกต์อื่น
 
-ชุดนี้มี 4 Skills แบบ project-level สำหรับเครื่องมือที่รองรับ Agent Skills
+ชุดนี้มี 5 Skills แบบ project-level สำหรับเครื่องมือที่รองรับ Agent Skills
 เอกสารหลักแต่ละตัวอยู่ใน `.github/skills/<name>/SKILL.md`
 ไม่จำเป็นต้องติดตั้ง template เกม และไม่มี asset เกมติดมาด้วย
-ทั้ง 4 ตัวใช้เฉพาะการย้ายจาก Needle ชื่อบางตัวเป็นชื่อทั่วไปแต่ไม่ได้ใช้สร้าง/แก้เกมทั่วไป
+4 Skills เดิมใช้เฉพาะย้าย Needle; เพิ่ม minigame-standard สำหรับสร้างเกมใหม่และมาตรฐานปลายทางโดยไม่บังคับ GLB/Prefab
 ไม่ต้องเรียกทุก Skill: ถ้าเกมไม่มี particle ให้ข้าม `quarks-vfx` และย้ายเฉพาะ asset ที่อยู่ใน allowlist
 
 ## เลือก Skill ให้ตรงงาน
 
 | Skill | ใช้เมื่อ |
 | --- | --- |
+| `minigame-standard` | สร้างเกมใหม่หรือจัดเกมปลายทางให้ตรง Stack, UI, CSS/FX, Asset Folder, Config และ QA |
 | `needle-migration` | สำรวจและย้ายเกมทั้งชุด เลือกอ่าน Skill ย่อยตามงาน |
 | `threejs-assets` | ย้าย asset ที่ต้องใช้จริงจาก Needle พร้อม dependency และการแชร์ทรัพยากร |
 | `web-game-logic` | แปลงพฤติกรรมเดิมของเกม Needle ให้ทำงานบนเว็บ |
@@ -32,6 +33,7 @@
 your-game/
   .github/
     skills/
+      minigame-standard/SKILL.md
       needle-migration/SKILL.md
       threejs-assets/SKILL.md
       web-game-logic/SKILL.md
@@ -55,6 +57,13 @@ https://github.com/masque-team/needle-to-threejs-migration
 เครื่องมือที่ไม่รองรับยังอ่าน `SKILL.md` เป็นคำสั่งแบบระบุไฟล์ได้ แต่ไม่ใช่ automatic discovery
 
 ## ตัวอย่างการเรียกใช้
+
+```text
+ใช้ minigame-standard สร้างเกมใหม่ตาม MINIGAME_STANDARD.md
+ให้มี Svelte 5 + TypeScript + Tailwind CSS 4 + Three.js + Vite 8,
+Menu/Gameplay/Result, assets ถูก folder, game.json + Zod
+ห้ามเปลี่ยน GLB หรือออกแบบ Prefab Format กลางใน V1
+```
 
 ```text
 ใช้ needle-migration ตรวจเกมต้นทางและสรุปขอบเขตก่อนเริ่มย้าย
